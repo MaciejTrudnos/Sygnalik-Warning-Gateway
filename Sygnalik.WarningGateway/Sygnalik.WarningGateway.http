@@ -1,0 +1,6 @@
+@Sygnalik.WarningGateway_HostAddress = http://localhost:5223
+
+GET {{Sygnalik.WarningGateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

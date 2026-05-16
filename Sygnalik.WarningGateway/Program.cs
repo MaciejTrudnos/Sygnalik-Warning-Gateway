@@ -1,39 +1,60 @@
+using Microsoft.Extensions.Caching.Memory;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-var summaries = new[]
+app.MapPost("/warning", (Warning warning, IMemoryCache cache) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    cache.Set($"warning", warning, TimeSpan.FromMinutes(10));
 
-app.MapGet("/weatherforecast", () =>
+    return Results.Ok(new
+    {
+        Message = "Warning added",
+        Warning = warning
+    });
+});
+
+app.MapGet("/warning", ([AsParameters] Location location, IMemoryCache cache) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    cache.Set($"location", location, TimeSpan.FromMinutes(10));
+
+    if (cache.TryGetValue($"warning", out Warning? warning))
+    {
+        return Results.Ok(warning);
+    }
+
+    return Results.NotFound();
+});
+
+app.MapGet("/location", (IMemoryCache cache) =>
+{
+    if (cache.TryGetValue($"location", out Location? location))
+    {
+        return Results.Ok(location);
+    }
+
+    return Results.NotFound();
+});
 
 app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+public class Warning
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public string Type { get; set; } = default!;
+    public Location Location { get; set; } = default!;
+}
+
+public class Location
+{
+    public double Latitude { get; set; } = default!;
+    public double Longitude { get; set; } = default!;
 }

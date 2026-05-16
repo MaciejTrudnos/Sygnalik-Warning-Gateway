@@ -1,0 +1,20 @@
+services:
+  sygnalik-warning-gateway:
+    build: .
+    container_name: sygnalik-warning-gateway
+    expose:
+      - "5223"
+    environment:
+      ASPNETCORE_URLS: http://+:5223
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "5223:80"
+    environment:
+      API_KEY: MY_SECRET_KEY_123
+    volumes:
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    depends_on:
+      - sygnalik-warning-gateway

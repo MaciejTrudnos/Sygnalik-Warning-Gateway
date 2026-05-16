@@ -1,0 +1,13 @@
+server {
+    listen 80;
+
+    location / {
+        if ($http_x_api_key != "${API_KEY}") {
+            return 401;
+        }
+
+        proxy_pass http://sygnalik-warning-gateway:5223;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}

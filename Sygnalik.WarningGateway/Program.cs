@@ -14,7 +14,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapPost("/warning", (Warning warning, IMemoryCache cache) =>
 {
-    cache.Set($"warning", warning, TimeSpan.FromSeconds(10));
+    cache.Set($"warning", warning, TimeSpan.FromSeconds(30));
 
     return Results.Ok(new
     {
@@ -25,7 +25,7 @@ app.MapPost("/warning", (Warning warning, IMemoryCache cache) =>
 
 app.MapGet("/warning", ([AsParameters] Location location, IMemoryCache cache) =>
 {
-    cache.Set($"location", location, TimeSpan.FromSeconds(10));
+    cache.Set($"location", location, TimeSpan.FromSeconds(30));
 
     if (cache.TryGetValue($"warning", out Warning? warning))
     {
